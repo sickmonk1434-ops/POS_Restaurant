@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 export default function RootPage() {
   const { user, loading } = useAuth();
