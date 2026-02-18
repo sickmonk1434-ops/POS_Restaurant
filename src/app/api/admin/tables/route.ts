@@ -32,7 +32,7 @@ export async function GET() {
     try {
         const allTables = await db.query.tables.findMany();
         return NextResponse.json(allTables);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Failed to fetch tables" }, { status: 500 });
     }
 }

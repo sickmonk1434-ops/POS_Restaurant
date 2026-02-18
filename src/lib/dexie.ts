@@ -7,6 +7,14 @@ export interface PaymentItem {
     timestamp: Date;
 }
 
+export interface BillItem {
+    id: string;
+    menuItemId: string;
+    name: string;
+    price: number;
+    quantity: number;
+}
+
 export interface LocalBill {
     id?: string;
     tableId: string | 'takeaway';
@@ -14,7 +22,7 @@ export interface LocalBill {
     cashierId: string;
     total: number;
     status: 'pending' | 'paid' | 'cancelled';
-    items: any[];
+    items: BillItem[];
     payments?: PaymentItem[];
     createdAt: Date;
     updatedAt: Date;

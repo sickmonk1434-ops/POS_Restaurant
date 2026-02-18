@@ -1,5 +1,6 @@
+import { BillItem } from "../dexie";
 
-export const simulateKOTPrint = async (tableNumber: string, items: any[]) => {
+export const simulateKOTPrint = async (tableNumber: string, items: BillItem[]) => {
     console.log("--- KOT PRINTING ---");
     console.log(`Table: ${tableNumber}`);
     console.log(`Time: ${new Date().toLocaleTimeString()}`);

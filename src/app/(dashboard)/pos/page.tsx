@@ -5,9 +5,9 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useLiveQuery } from "dexie-react-hooks";
 import { localDb } from "@/lib/dexie";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Minus, Trash2, ShoppingCart, Search, LayoutGrid, FileClock, Utensils, Bike, Check, X, MousePointer2 } from "lucide-react";
+import { Plus, Minus, Trash2, ShoppingCart, Search, FileClock, Utensils, Bike, Check, X, MousePointer2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,14 +15,9 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { simulateKOTPrint } from "@/lib/services/kot";
-import { LocalBill, LocalTable, LocalCategory, LocalFloor, LocalMenuItem, PaymentItem } from "@/lib/dexie";
+import { LocalBill, LocalTable, LocalCategory, LocalFloor, LocalMenuItem, PaymentItem, BillItem } from "@/lib/dexie";
 
-interface CartItem {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-}
+type CartItem = BillItem;
 
 type POSView = 'landing' | 'table_selection' | 'menu';
 
@@ -46,13 +41,11 @@ export default function POSPage() {
     // Live queries
     const categoriesRaw = useLiveQuery(() => localDb.categories.toArray());
     const menuItemsRaw = useLiveQuery(() => localDb.menuItems.toArray());
-    const floorsRaw = useLiveQuery(() => localDb.floors.toArray());
     const tablesRaw = useLiveQuery(() => localDb.restaurantTables.toArray());
     const runningBillsRaw = useLiveQuery(() => localDb.bills.where("status").equals("pending").toArray());
 
     const categories = useMemo(() => categoriesRaw || [] as LocalCategory[], [categoriesRaw]);
     const menuItems = useMemo(() => menuItemsRaw || [] as LocalMenuItem[], [menuItemsRaw]);
-    const floors = useMemo(() => floorsRaw || [] as LocalFloor[], [floorsRaw]);
     const tables = useMemo(() => {
         if (!tablesRaw) return [] as LocalTable[];
         return [...tablesRaw].sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true, sensitivity: 'base' }));
@@ -79,23 +72,29 @@ export default function POSPage() {
         return result;
     }, [tables, tableSearch, tableFilter, runningBills]);
 
-    const addToCart = (item: any) => {
+    const addToCart = (item: LocalMenuItem) => {
         setCart(prev => {
-            const existing = prev.find(i => i.id === item.id);
+            const existing = prev.find(i => i.menuItemId === item.id);
             if (existing) {
-                return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+                return prev.map(i => i.menuItemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
             }
-            return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1 }];
+            return [...prev, {
+                id: crypto.randomUUID(),
+                menuItemId: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: 1
+            }];
         });
     };
 
-    const removeFromCart = (itemId: string) => {
-        setCart(prev => prev.filter(i => i.id !== itemId));
+    const removeFromCart = (menuItemId: string) => {
+        setCart(prev => prev.filter(i => i.menuItemId !== menuItemId));
     };
 
-    const updateQuantity = (itemId: string, delta: number) => {
+    const updateQuantity = (menuItemId: string, delta: number) => {
         setCart(prev => prev.map(i => {
-            if (i.id === itemId) {
+            if (i.menuItemId === menuItemId) {
                 const newQty = Math.max(1, i.quantity + delta);
                 return { ...i, quantity: newQty };
             }
@@ -162,8 +161,10 @@ export default function POSPage() {
 
         try {
             if (activeBillId) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await localDb.bills.update(activeBillId, billData as any);
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await localDb.bills.add(billData as any);
             }
 
@@ -398,13 +399,13 @@ export default function POSPage() {
                                         <TableRow key={item.id} className="group border-b">
                                             <TableCell className="py-4">
                                                 <div className="font-bold text-lg">{item.name}</div>
-                                                <button onClick={() => removeFromCart(item.id)} className="text-[10px] text-destructive flex items-center gap-1 opacity-0 group-hover:opacity-100 mt-1 transition-opacity"><Trash2 className="h-3 w-3" /> Remove</button>
+                                                <button onClick={() => removeFromCart(item.menuItemId)} className="text-[10px] text-destructive flex items-center gap-1 opacity-0 group-hover:opacity-100 mt-1 transition-opacity"><Trash2 className="h-3 w-3" /> Remove</button>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-center gap-3">
-                                                    <button onClick={() => updateQuantity(item.id, -1)} className="bg-muted h-8 w-8 flex items-center justify-center rounded-lg hover:bg-black hover:text-white transition-colors"><Minus className="h-4 w-4" /></button>
+                                                    <button onClick={() => updateQuantity(item.menuItemId, -1)} className="bg-muted h-8 w-8 flex items-center justify-center rounded-lg hover:bg-black hover:text-white transition-colors"><Minus className="h-4 w-4" /></button>
                                                     <span className="w-6 text-center font-black text-xl">{item.quantity}</span>
-                                                    <button onClick={() => updateQuantity(item.id, 1)} className="bg-primary h-8 w-8 flex items-center justify-center rounded-lg text-white hover:brightness-110 transition-colors"><Plus className="h-4 w-4" /></button>
+                                                    <button onClick={() => updateQuantity(item.menuItemId, 1)} className="bg-primary h-8 w-8 flex items-center justify-center rounded-lg text-white hover:brightness-110 transition-colors"><Plus className="h-4 w-4" /></button>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-right font-black text-lg text-primary">₹{(item.price * item.quantity).toFixed(0)}</TableCell>
@@ -442,7 +443,7 @@ export default function POSPage() {
                                         {payments.map((p, idx) => (
                                             <div key={p.id} className="flex gap-4 items-center animate-in slide-in-from-left-4">
                                                 <div className="flex-1 grid grid-cols-2 gap-4">
-                                                    <Select value={p.method} onValueChange={(val: any) => updatePayment(p.id!, { method: val })}>
+                                                    <Select value={p.method} onValueChange={(val: 'cash' | 'upi' | 'card') => updatePayment(p.id!, { method: val })}>
                                                         <SelectTrigger className="h-14 font-bold text-lg"><SelectValue /></SelectTrigger>
                                                         <SelectContent>
                                                             <SelectItem value="cash">💵 Cash</SelectItem>

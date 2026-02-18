@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function ProtectedRoute({
@@ -13,15 +13,13 @@ export default function ProtectedRoute({
 }) {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const pathname = usePathname();
 
     useEffect(() => {
         if (!loading) {
             if (!user) {
                 router.push("/login");
-            } else if (requiredRole && user.role !== requiredRole && user.role !== "admin") {
-                // Cashiers can't access admin pages, but admins can access cashier pages (POS)
-                router.push(user.role === "admin" ? "/admin" : "/pos");
+            } else if (requiredRole && user.role !== "admin" && user.role !== requiredRole) {
+                router.push("/pos");
             }
         }
     }, [user, loading, router, requiredRole]);
