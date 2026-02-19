@@ -8,13 +8,13 @@ interface BillReceiptProps {
 }
 
 export function BillReceipt({ bill, tableNumber, cashierName }: BillReceiptProps) {
-  const date = new Date(bill.createdAt);
-  const dateStr = date.toLocaleDateString("en-IN", {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "2-digit",
     year: "2-digit",
   });
-  const timeStr = date.toLocaleTimeString("en-IN", {
+  const timeStr = now.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
