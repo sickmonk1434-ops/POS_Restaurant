@@ -13,7 +13,7 @@ export default function RootPage() {
       if (!user) {
         router.push("/login");
       } else {
-        router.push(user.role === "admin" ? "/admin" : "/pos");
+        router.push(user.role === "superadmin" ? "/superadmin" : user.role === "admin" ? "/admin" : "/pos");
       }
     }
   }, [user, loading, router]);

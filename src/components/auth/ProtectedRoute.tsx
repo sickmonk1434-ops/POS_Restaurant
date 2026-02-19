@@ -9,7 +9,7 @@ export default function ProtectedRoute({
     requiredRole
 }: {
     children: React.ReactNode;
-    requiredRole?: "admin" | "cashier";
+    requiredRole?: "superadmin" | "admin" | "cashier";
 }) {
     const { user, loading } = useAuth();
     const router = useRouter();
@@ -18,6 +18,10 @@ export default function ProtectedRoute({
         if (!loading) {
             if (!user) {
                 router.push("/login");
+            } else if (user.role === "superadmin") {
+                // Superadmin bypasses all role checks
+            } else if (requiredRole === "superadmin" && user.role !== "superadmin") {
+                router.push(user.role === "admin" ? "/admin" : "/pos");
             } else if (requiredRole && user.role !== "admin" && user.role !== requiredRole) {
                 router.push("/pos");
             }

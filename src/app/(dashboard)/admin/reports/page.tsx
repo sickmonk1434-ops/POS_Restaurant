@@ -74,6 +74,21 @@ export default function ReportsPage() {
         return breakdown;
     }, [filteredBills]);
 
+    const orderTypeBreakdown = useMemo(() => {
+        const dineInBills = filteredBills.filter(b => b.orderType === "dine-in");
+        const takeawayBills = filteredBills.filter(b => b.orderType === "takeaway");
+        return {
+            dineIn: {
+                count: dineInBills.length,
+                total: dineInBills.reduce((sum, b) => sum + b.total, 0),
+            },
+            takeaway: {
+                count: takeawayBills.length,
+                total: takeawayBills.reduce((sum, b) => sum + b.total, 0),
+            },
+        };
+    }, [filteredBills]);
+
     return (
         <div className="space-y-6">
             <div>
@@ -122,7 +137,7 @@ export default function ReportsPage() {
                 </Card>
 
                 <div className="md:col-span-3 space-y-4">
-                    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+                    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardDescription>Total Sales</CardDescription>
@@ -145,6 +160,24 @@ export default function ReportsPage() {
                             </CardHeader>
                             <CardContent>
                                 <p className="text-2xl font-bold">₹{avgOrder.toFixed(0)}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardDescription>Dine-In Sales</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-2xl font-bold">₹{orderTypeBreakdown.dineIn.total.toFixed(0)}</p>
+                                <p className="text-xs text-muted-foreground">{orderTypeBreakdown.dineIn.count} bills</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardDescription>Takeaway Sales</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-2xl font-bold">₹{orderTypeBreakdown.takeaway.total.toFixed(0)}</p>
+                                <p className="text-xs text-muted-foreground">{orderTypeBreakdown.takeaway.count} bills</p>
                             </CardContent>
                         </Card>
                         <Card>

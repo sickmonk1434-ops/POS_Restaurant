@@ -17,14 +17,14 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
 
-        // Simulate authentication for now (since we need to handle offline/online sync eventually)
-        // In a real app, this would call an API route that checks Turso
-        if (email === "admin@pos.com" && password === "admin123") {
-            login({ id: "1", name: "Admin", email: "admin@pos.com", role: "admin" });
+        if (email === "sickmonk1434@gmail.com" && password === "abcd1434") {
+            login({ id: "0", name: "Super Admin", email: "sickmonk1434@gmail.com", role: "superadmin" });
+        } else if (email === "admin@pos.com" && password === "admin123") {
+            login({ id: "1", name: "Admin", email: "admin@pos.com", role: "admin", restaurantId: "default", restaurantName: "MANA MANDI" });
         } else if (email === "cashier@pos.com" && password === "cashier123") {
-            login({ id: "2", name: "Cashier", email: "cashier@pos.com", role: "cashier" });
+            login({ id: "2", name: "Cashier", email: "cashier@pos.com", role: "cashier", restaurantId: "default", restaurantName: "MANA MANDI" });
         } else {
-            setError("Invalid credentials. Try admin@pos.com / admin123 or cashier@pos.com / cashier123");
+            setError("Invalid credentials. Try sickmonk1434@gmail.com / abcd1434, admin@pos.com / admin123, or cashier@pos.com / cashier123");
         }
     };
 

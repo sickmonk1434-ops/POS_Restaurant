@@ -20,6 +20,7 @@ export async function POST(request: Request) {
             number: data.number,
             capacity: data.capacity || 4,
             floorId: data.floorId,
+            restaurantId: data.restaurantId || null,
         }).returning();
         return NextResponse.json(newTable[0]);
     } catch (error) {
@@ -28,9 +29,14 @@ export async function POST(request: Request) {
     }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const allTables = await db.query.tables.findMany();
+        const { searchParams } = new URL(request.url);
+        const restaurantId = searchParams.get("restaurantId");
+
+        const allTables = restaurantId
+            ? await db.query.tables.findMany({ where: eq(tables.restaurantId, restaurantId) })
+            : await db.query.tables.findMany();
         return NextResponse.json(allTables);
     } catch {
         return NextResponse.json({ error: "Failed to fetch tables" }, { status: 500 });

@@ -11,7 +11,8 @@ import {
     FileText,
     BarChart3,
     Map,
-    Table as TableIcon
+    Table as TableIcon,
+    Building2
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,10 +23,34 @@ interface NavItem {
     title: string;
     href: string;
     icon: any;
-    roles: ("admin" | "cashier")[];
+    roles: ("superadmin" | "admin" | "cashier")[];
 }
 
 const navItems: NavItem[] = [
+    {
+        title: "SA Dashboard",
+        href: "/superadmin",
+        icon: LayoutDashboard,
+        roles: ["superadmin"],
+    },
+    {
+        title: "Restaurants",
+        href: "/superadmin/restaurants",
+        icon: Building2,
+        roles: ["superadmin"],
+    },
+    {
+        title: "Admin Users",
+        href: "/superadmin/users",
+        icon: Users,
+        roles: ["superadmin"],
+    },
+    {
+        title: "All Reports",
+        href: "/superadmin/reports",
+        icon: BarChart3,
+        roles: ["superadmin"],
+    },
     {
         title: "POS Billing",
         href: "/pos",
@@ -91,9 +116,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             {/* Sidebar */}
             <aside className="w-64 border-r bg-muted/30 hidden md:flex flex-col">
                 <div className="p-6">
-                    <h1 className="text-xl font-bold tracking-tight">MANA MANDI</h1>
+                    <h1 className="text-xl font-bold tracking-tight">
+                        {user.role === "superadmin" ? "POS ADMIN" : (user.restaurantName || "MANA MANDI")}
+                    </h1>
                     <p className="text-xs text-muted-foreground uppercase font-semibold mt-1">
-                        {user.role} Portal
+                        {user.role === "superadmin" ? "Super Admin" : `${user.role} Portal`}
                     </p>
                 </div>
                 <nav className="flex-1 px-4 space-y-1">

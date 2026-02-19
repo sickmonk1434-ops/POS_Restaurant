@@ -7,7 +7,9 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: "admin" | "cashier";
+    role: "superadmin" | "admin" | "cashier";
+    restaurantId?: string;
+    restaurantName?: string;
 }
 
 export const useAuth = () => {
@@ -26,7 +28,7 @@ export const useAuth = () => {
     const login = (userData: User) => {
         localStorage.setItem("pos_user", JSON.stringify(userData));
         setUser(userData);
-        router.push(userData.role === "admin" ? "/admin" : "/pos");
+        router.push(userData.role === "superadmin" ? "/superadmin" : userData.role === "admin" ? "/admin" : "/pos");
     };
 
     const logout = () => {

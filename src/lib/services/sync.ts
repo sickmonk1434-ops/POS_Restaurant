@@ -1,10 +1,11 @@
 import { localDb } from "@/lib/dexie";
 
-export const syncMenuData = async () => {
+export const syncMenuData = async (restaurantId?: string) => {
     console.log("Starting menu sync from API...");
     try {
         // 1. Fetch from API (Server)
-        const response = await fetch("/api/sync/menu");
+        const url = restaurantId ? `/api/sync/menu?restaurantId=${restaurantId}` : "/api/sync/menu";
+        const response = await fetch(url);
         if (!response.ok) throw new Error("Sync API returned error");
 
         const { categories, menuItems, floors, tables } = await response.json();

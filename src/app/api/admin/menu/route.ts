@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, isActive } = body;
+        const { name, description, price, categoryId, isActive, restaurantId } = body;
 
         // Check for existing menu item name
         const existing = await db.query.menuItems.findFirst({
@@ -22,6 +22,7 @@ export async function POST(request: Request) {
             description,
             price: parseFloat(price.toString()),
             categoryId,
+            restaurantId: restaurantId || null,
             isActive: isActive ?? true,
         }).returning();
 
@@ -32,5 +33,19 @@ export async function POST(request: Request) {
             { error: error instanceof Error ? error.message : "Failed to create menu item" },
             { status: 500 }
         );
+    }
+}
+
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const restaurantId = searchParams.get("restaurantId");
+
+        const allItems = restaurantId
+            ? await db.query.menuItems.findMany({ where: eq(menuItems.restaurantId, restaurantId) })
+            : await db.query.menuItems.findMany();
+        return NextResponse.json(allItems);
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to fetch menu items" }, { status: 500 });
     }
 }

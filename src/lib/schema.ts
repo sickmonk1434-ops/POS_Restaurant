@@ -1,18 +1,29 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { createId } from "@paralleldrive/cuid2";
 
+export const restaurants = sqliteTable("restaurants", {
+    id: text("id").primaryKey().$defaultFn(() => createId()),
+    name: text("name").notNull(),
+    address: text("address"),
+    phone: text("phone"),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});
+
 export const users = sqliteTable("users", {
     id: text("id").primaryKey().$defaultFn(() => createId()),
     name: text("name").notNull(),
     email: text("email").unique().notNull(),
-    role: text("role", { enum: ["admin", "cashier"] }).notNull().default("cashier"),
+    role: text("role", { enum: ["superadmin", "admin", "cashier"] }).notNull().default("cashier"),
     password: text("password").notNull(),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "set null" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
 export const floors = sqliteTable("floors", {
     id: text("id").primaryKey().$defaultFn(() => createId()),
     name: text("name").notNull(),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
@@ -21,6 +32,7 @@ export const tables = sqliteTable("restaurant_tables", {
     number: text("number").notNull().unique(),
     capacity: integer("capacity").notNull().default(4),
     floorId: text("floor_id").references(() => floors.id, { onDelete: "cascade" }),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     status: text("status", { enum: ["available", "occupied", "reserved"] }).notNull().default("available"),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
@@ -28,6 +40,7 @@ export const tables = sqliteTable("restaurant_tables", {
 export const categories = sqliteTable("categories", {
     id: text("id").primaryKey().$defaultFn(() => createId()),
     name: text("name").notNull(),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
 
@@ -37,6 +50,7 @@ export const menuItems = sqliteTable("menu_items", {
     description: text("description"),
     price: real("price").notNull(),
     categoryId: text("category_id").references(() => categories.id, { onDelete: "set null" }),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
@@ -45,6 +59,8 @@ export const bills = sqliteTable("bills", {
     id: text("id").primaryKey().$defaultFn(() => createId()),
     tableId: text("table_id").references(() => tables.id, { onDelete: "set null" }),
     cashierId: text("cashier_id").references(() => users.id),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
+    orderType: text("order_type", { enum: ["dine-in", "takeaway"] }),
     total: real("total").notNull().default(0),
     status: text("status", { enum: ["pending", "paid", "cancelled"] }).notNull().default("pending"),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
@@ -65,6 +81,7 @@ export const auditLogs = sqliteTable("audit_logs", {
     tableName: text("table_name").notNull(),
     recordId: text("record_id").notNull(),
     changedBy: text("changed_by").references(() => users.id),
+    restaurantId: text("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     oldData: text("old_data"),
     newData: text("new_data"),
     timestamp: integer("timestamp", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
