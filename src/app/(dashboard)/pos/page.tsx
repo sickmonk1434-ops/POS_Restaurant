@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useLiveQuery } from "dexie-react-hooks";
 import { localDb } from "@/lib/dexie";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { simulateKOTPrint } from "@/lib/services/kot";
 import { LocalBill, LocalTable, LocalCategory, LocalFloor, LocalMenuItem, PaymentItem, BillItem } from "@/lib/dexie";
+import { BillReceipt } from "@/components/bill-receipt";
 
 type CartItem = BillItem;
 
@@ -37,6 +38,9 @@ export default function POSPage() {
     // Payment State
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [payments, setPayments] = useState<Partial<PaymentItem>[]>([{ id: crypto.randomUUID(), method: 'cash', amount: 0 }]);
+
+    // Print State
+    const [printBill, setPrintBill] = useState<{ bill: LocalBill; tableNumber: string; cashierName: string } | null>(null);
 
     // Live queries
     const categoriesRaw = useLiveQuery(() => localDb.categories.toArray());
@@ -168,8 +172,19 @@ export default function POSPage() {
                 await localDb.bills.add(billData as any);
             }
 
+            if (status === 'paid') {
+                const table = tables.find(t => t.id === selectedTableId);
+                setPrintBill({
+                    bill: billData as LocalBill,
+                    tableNumber: table?.number || "Takeaway",
+                    cashierName: user?.name || user?.id || "Cashier",
+                });
+            }
+
             resetPOS();
-            alert(status === 'paid' ? "Bill finalized!" : "Bill parked.");
+            if (status !== 'paid') {
+                alert("Bill parked.");
+            }
         } catch (error) {
             console.error("Failed to save bill:", error);
         }
@@ -194,10 +209,29 @@ export default function POSPage() {
 
     const selectedTable = tables.find(t => t.id === selectedTableId);
 
+    // Print receipt when printBill is set
+    useEffect(() => {
+        if (printBill) {
+            const timeout = setTimeout(() => {
+                window.print();
+                setPrintBill(null);
+            }, 100);
+            return () => clearTimeout(timeout);
+        }
+    }, [printBill]);
+
+    const receiptElement = printBill && (
+        <BillReceipt
+            bill={printBill.bill}
+            tableNumber={printBill.tableNumber}
+            cashierName={printBill.cashierName}
+        />
+    );
+
     // Landing View Components
     if (view === 'landing') {
         return (
-            <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-muted/30 rounded-2xl border-2 border-dashed border-muted">
+            <>{receiptElement}<div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-muted/30 rounded-2xl border-2 border-dashed border-muted">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-12 max-w-4xl w-full">
                     <button
                         onClick={() => { setOrderType('dine-in'); setView('table_selection'); }}
@@ -246,14 +280,14 @@ export default function POSPage() {
                         </Dialog>
                     </div>
                 </div>
-            </div>
+            </div></>
         );
     }
 
     // Table Selection View (Inspired by reference image)
     if (view === 'table_selection') {
         return (
-            <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
+            <>{receiptElement}<div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
                 <div className="bg-card border rounded-2xl shadow-sm p-4 sticky top-0 z-10">
                     <div className="flex flex-col md:flex-row items-center gap-6">
                         <div className="flex bg-muted p-1 rounded-xl w-full md:w-auto">
@@ -298,13 +332,13 @@ export default function POSPage() {
                         })}
                     </div>
                 </div>
-            </div>
+            </div></>
         );
     }
 
     // Default Menu View (Existing POS UI with enhancements)
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
+        <>{receiptElement}<div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
             {/* Menu Section */}
             <div className="lg:col-span-8 flex flex-col gap-6 overflow-hidden">
                 <div className="flex items-center gap-4">
@@ -474,6 +508,6 @@ export default function POSPage() {
                     </div>
                 </Card>
             </div>
-        </div>
+        </div></>
     );
 }

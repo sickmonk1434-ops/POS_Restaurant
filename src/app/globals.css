@@ -124,3 +124,99 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print styles for thermal receipt */
+@media print {
+  /* Hide everything except the receipt */
+  body * {
+    visibility: hidden;
+  }
+
+  #bill-receipt,
+  #bill-receipt * {
+    visibility: visible !important;
+    display: block;
+  }
+
+  #bill-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+  }
+
+  @page {
+    size: 80mm auto;
+    margin: 2mm;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: black;
+  }
+
+  .receipt {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    width: 100%;
+    color: black;
+  }
+
+  .receipt .text-center {
+    text-align: center;
+  }
+
+  .receipt .separator {
+    text-align: center;
+    letter-spacing: -0.5px;
+  }
+
+  .receipt .bill-info .row {
+    display: flex !important;
+    justify-content: space-between;
+  }
+
+  .receipt .items-header,
+  .receipt .item-row {
+    display: flex !important;
+  }
+
+  .receipt .items-header .item-name,
+  .receipt .item-row .item-name {
+    flex: 3;
+    text-align: left;
+  }
+
+  .receipt .items-header .item-qty,
+  .receipt .item-row .item-qty {
+    flex: 1;
+    text-align: center;
+  }
+
+  .receipt .items-header .item-rate,
+  .receipt .item-row .item-rate {
+    flex: 1.5;
+    text-align: right;
+  }
+
+  .receipt .items-header .item-amount,
+  .receipt .item-row .item-amount {
+    flex: 1.5;
+    text-align: right;
+  }
+
+  .receipt .total-row {
+    display: flex !important;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .receipt .footer {
+    margin-top: 4px;
+    font-style: italic;
+  }
+}
