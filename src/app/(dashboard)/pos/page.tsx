@@ -115,6 +115,7 @@ export default function POSPage() {
 
     const addPaymentRow = () => {
         setPayments(prev => [...prev, { id: crypto.randomUUID(), method: 'cash', amount: remainingAmount > 0 ? remainingAmount : 0 }]);
+        // Note: amount displays as empty when 0 (see input value logic), so user can type freely
     };
 
     const removePaymentRow = (id: string) => {
@@ -485,8 +486,9 @@ export default function POSPage() {
                                                     <Input
                                                         type="number"
                                                         className="h-14 text-xl font-black"
-                                                        value={p.amount}
-                                                        onChange={(e) => updatePayment(p.id!, { amount: parseFloat(e.target.value) || 0 })}
+                                                        value={p.amount === 0 ? "" : p.amount}
+                                                        placeholder="0"
+                                                        onChange={(e) => updatePayment(p.id!, { amount: e.target.value === "" ? 0 : parseFloat(e.target.value) })}
                                                         autoFocus={idx === payments.length - 1}
                                                     />
                                                 </div>
