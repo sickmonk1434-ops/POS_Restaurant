@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Minus, Trash2, ShoppingCart, Search, FileClock, Utensils, Bike, Check, X, MousePointer2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +29,7 @@ export default function POSPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [tableSearch, setTableSearch] = useState("");
     const [tableFilter, setTableFilter] = useState<'all' | 'available' | 'occupied'>('all');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
     const [activeBillId, setActiveBillId] = useState<string | null>(null);
@@ -323,52 +323,44 @@ export default function POSPage() {
                 </div>
 
                 <Card className="flex-1 flex flex-col overflow-hidden rounded-2xl border-2">
-                    <Tabs defaultValue="all" className="flex-1 flex flex-col overflow-hidden">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-2xl font-black">Menu</CardTitle>
-                                <TabsList className="bg-muted/50 p-1 rounded-xl">
-                                    <TabsTrigger value="all" className="rounded-lg px-6 font-bold">All</TabsTrigger>
-                                    {categories.map(cat => (
-                                        <TabsTrigger key={cat.id} value={cat.id} className="rounded-lg px-6 font-bold">{cat.name}</TabsTrigger>
-                                    ))}
-                                </TabsList>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="flex-1 overflow-y-auto p-6 border-t bg-muted/5">
-                            <TabsContent value="all" className="m-0">
-                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {filteredItems.map(item => (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => addToCart(item)}
-                                            className="group flex flex-col text-left p-5 rounded-2xl border-2 bg-card hover:border-primary hover:shadow-xl transition-all active:scale-95 text-xl font-bold"
-                                        >
-                                            <span className="group-hover:text-primary transition-colors leading-tight mb-2">{item.name}</span>
-                                            <Badge variant="secondary" className="w-fit text-lg py-1 px-3 rounded-lg">₹{item.price}</Badge>
-                                        </button>
-                                    ))}
-                                </div>
-                            </TabsContent>
-                            {/* ... individual categories ... */}
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between mb-2">
+                            <CardTitle className="text-2xl font-black">Menu</CardTitle>
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-1 flex-nowrap scrollbar-hide">
+                            <Button
+                                variant={selectedCategory === null ? "default" : "outline"}
+                                className="rounded-full px-6 font-bold shrink-0"
+                                onClick={() => setSelectedCategory(null)}
+                            >
+                                All
+                            </Button>
                             {categories.map(cat => (
-                                <TabsContent key={cat.id} value={cat.id} className="m-0">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                                        {filteredItems.filter(i => i.categoryId === cat.id).map(item => (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => addToCart(item)}
-                                                className="group flex flex-col text-left p-5 rounded-2xl border-2 bg-card hover:border-primary hover:shadow-xl transition-all active:scale-95 text-xl font-bold"
-                                            >
-                                                <span className="group-hover:text-primary transition-colors leading-tight mb-2">{item.name}</span>
-                                                <Badge variant="secondary" className="w-fit text-lg py-1 px-3 rounded-lg">₹{item.price}</Badge>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </TabsContent>
+                                <Button
+                                    key={cat.id}
+                                    variant={selectedCategory === cat.id ? "default" : "outline"}
+                                    className="rounded-full px-6 font-bold shrink-0"
+                                    onClick={() => setSelectedCategory(cat.id)}
+                                >
+                                    {cat.name}
+                                </Button>
                             ))}
-                        </CardContent>
-                    </Tabs>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-y-auto p-6 border-t bg-muted/5">
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {(selectedCategory === null ? filteredItems : filteredItems.filter(i => i.categoryId === selectedCategory)).map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => addToCart(item)}
+                                    className="group flex flex-col text-left p-5 rounded-2xl border-2 bg-card hover:border-primary hover:shadow-xl transition-all active:scale-95 text-xl font-bold"
+                                >
+                                    <span className="group-hover:text-primary transition-colors leading-tight mb-2">{item.name}</span>
+                                    <Badge variant="secondary" className="w-fit text-lg py-1 px-3 rounded-lg">₹{item.price}</Badge>
+                                </button>
+                            ))}
+                        </div>
+                    </CardContent>
                 </Card>
             </div>
 
