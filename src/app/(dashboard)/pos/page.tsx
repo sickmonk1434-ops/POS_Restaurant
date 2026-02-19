@@ -128,10 +128,13 @@ export default function POSPage() {
     };
 
     const handleKOT = async () => {
-        if (cart.length === 0) return;
+        if (cart.length === 0 || (orderType === 'dine-in' && !selectedTableId)) {
+            alert("Please select items and a table (for dine-in).");
+            return;
+        }
         const table = tables.find((t: LocalTable) => t.id === selectedTableId);
         await simulateKOTPrint(table?.number || "Takeaway", cart);
-        alert("KOT sent to kitchen!");
+        await handleSaveBill('pending');
     };
 
     const handleSaveBill = async (status: 'pending' | 'paid') => {
@@ -452,9 +455,8 @@ export default function POSPage() {
                             <span>Total</span>
                             <span className="text-primary italic">₹{total.toFixed(0)}</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-2">
                             <Button variant="outline" className="h-16 text-lg font-bold rounded-xl" onClick={handleKOT} disabled={cart.length === 0}>KOT</Button>
-                            <Button variant="secondary" className="h-16 text-lg font-bold rounded-xl" onClick={() => handleSaveBill('pending')} disabled={cart.length === 0}>Park</Button>
                             <Dialog open={isPaymentOpen} onOpenChange={(open) => {
                                 setIsPaymentOpen(open);
                                 if (open) {
