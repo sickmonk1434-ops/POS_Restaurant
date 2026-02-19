@@ -454,7 +454,12 @@ export default function POSPage() {
                         <div className="grid grid-cols-3 gap-2">
                             <Button variant="outline" className="h-16 text-lg font-bold rounded-xl" onClick={handleKOT} disabled={cart.length === 0}>KOT</Button>
                             <Button variant="secondary" className="h-16 text-lg font-bold rounded-xl" onClick={() => handleSaveBill('pending')} disabled={cart.length === 0}>Park</Button>
-                            <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+                            <Dialog open={isPaymentOpen} onOpenChange={(open) => {
+                                setIsPaymentOpen(open);
+                                if (open) {
+                                    setPayments([{ id: crypto.randomUUID(), method: 'cash', amount: total }]);
+                                }
+                            }}>
                                 <DialogTrigger asChild>
                                     <Button className="h-16 text-lg font-extrabold rounded-xl shadow-xl shadow-primary/20" disabled={cart.length === 0}>PAY</Button>
                                 </DialogTrigger>
