@@ -50,7 +50,7 @@ export default function BillHistoryPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {bills.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).map((bill) => (
+                            {bills.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((bill) => (
                                 <TableRow key={bill.id}>
                                     <TableCell className="font-mono text-xs">{bill.id?.substring(0, 8)}...</TableCell>
                                     <TableCell>{new Date(bill.createdAt).toLocaleString()}</TableCell>
