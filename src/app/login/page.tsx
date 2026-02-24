@@ -20,9 +20,9 @@ export default function LoginPage() {
         if (email === "sickmonk1434@gmail.com" && password === "abcd1434") {
             login({ id: "0", name: "Super Admin", email: "sickmonk1434@gmail.com", role: "superadmin" });
         } else if (email === "admin@pos.com" && password === "admin123") {
-            login({ id: "1", name: "Admin", email: "admin@pos.com", role: "admin", restaurantId: "default", restaurantName: "MANA MANDI" });
+            login({ id: "1", name: "Admin", email: "admin@pos.com", role: "admin", restaurantId: "mana-mandi-001", restaurantName: "MANA MANDI" });
         } else if (email === "cashier@pos.com" && password === "cashier123") {
-            login({ id: "2", name: "Cashier", email: "cashier@pos.com", role: "cashier", restaurantId: "default", restaurantName: "MANA MANDI" });
+            login({ id: "2", name: "Cashier", email: "cashier@pos.com", role: "cashier", restaurantId: "mana-mandi-001", restaurantName: "MANA MANDI" });
         } else {
             setError("Invalid credentials. Try sickmonk1434@gmail.com / abcd1434, admin@pos.com / admin123, or cashier@pos.com / cashier123");
         }
