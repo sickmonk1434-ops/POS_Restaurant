@@ -37,7 +37,10 @@ export default function ReportsPage() {
 
     const filteredBills = useMemo(() => {
         return bills.filter(bill => {
+            if (bill.status !== 'paid') return false;
+            if (!bill.createdAt) return false;
             const billDate = new Date(bill.createdAt);
+            if (isNaN(billDate.getTime())) return false;
             const selected = new Date(selectedDate);
 
             if (reportType === "daily") {

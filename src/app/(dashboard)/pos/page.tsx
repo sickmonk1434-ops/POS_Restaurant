@@ -148,7 +148,7 @@ export default function POSPage() {
             return;
         }
 
-        const billData = {
+        const billData: Record<string, unknown> = {
             id: activeBillId || crypto.randomUUID(),
             tableId: selectedTableId || 'takeaway',
             orderType,
@@ -162,10 +162,12 @@ export default function POSPage() {
                 amount: p.amount || 0,
                 timestamp: p.timestamp || new Date()
             })) as PaymentItem[] : [],
-            createdAt: activeBillId ? undefined : new Date(),
             updatedAt: new Date(),
             synced: false
         };
+        if (!activeBillId) {
+            billData.createdAt = new Date();
+        }
 
         try {
             if (activeBillId) {
@@ -273,7 +275,7 @@ export default function POSPage() {
                                         <Button key={bill.id} variant="outline" className="h-20 justify-between px-6 border-2" onClick={() => loadRunningBill(bill)}>
                                             <div className="flex flex-col items-start">
                                                 <span className="text-lg font-bold">Table {tables.find(t => t.id === bill.tableId)?.number || 'Takeaway'}</span>
-                                                <span className="text-xs text-muted-foreground">{bill.items.length} items • {new Date(bill.createdAt).toLocaleTimeString()}</span>
+                                                <span className="text-xs text-muted-foreground">{bill.items.length} items • {bill.createdAt ? new Date(bill.createdAt).toLocaleTimeString() : ''}</span>
                                             </div>
                                             <div className="text-2xl font-black text-primary">₹{bill.total}</div>
                                         </Button>
