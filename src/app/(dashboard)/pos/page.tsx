@@ -13,8 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { simulateKOTPrint } from "@/lib/services/kot";
-import { LocalBill, LocalTable, LocalCategory, LocalFloor, LocalMenuItem, PaymentItem, BillItem } from "@/lib/dexie";
+import { LocalBill, LocalTable, LocalCategory, LocalMenuItem, PaymentItem, BillItem } from "@/lib/dexie";
 import { BillReceipt } from "@/components/bill-receipt";
 import { KOTReceipt } from "@/components/kot-receipt";
 
@@ -227,7 +226,7 @@ export default function POSPage() {
             const timeout = setTimeout(() => {
                 window.print();
                 setPrintBill(null);
-            }, 100);
+            }, 500);
             return () => clearTimeout(timeout);
         }
     }, [printBill]);
@@ -238,7 +237,7 @@ export default function POSPage() {
             const timeout = setTimeout(() => {
                 window.print();
                 setPrintKOT(null);
-            }, 100);
+            }, 500);
             return () => clearTimeout(timeout);
         }
     }, [printKOT]);

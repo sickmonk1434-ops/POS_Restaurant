@@ -127,25 +127,25 @@
 
 /* Print styles for thermal receipt */
 @media print {
-  /* Hide everything except the receipt */
-  body * {
-    visibility: hidden;
+  /* Hide everything for print */
+  body > * {
+    display: none !important;
   }
 
-  #bill-receipt,
-  #bill-receipt *,
-  #kot-receipt,
-  #kot-receipt * {
-    visibility: visible !important;
-    display: block;
-  }
-
+  /* Show only the receipt containers */
   #bill-receipt,
   #kot-receipt {
+    display: block !important;
     position: absolute;
     left: 0;
     top: 0;
     width: 80mm;
+    visibility: visible !important;
+  }
+
+  #bill-receipt *,
+  #kot-receipt * {
+    visibility: visible !important;
   }
 
   @page {
