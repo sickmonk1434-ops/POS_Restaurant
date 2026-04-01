@@ -133,12 +133,15 @@
   }
 
   #bill-receipt,
-  #bill-receipt * {
+  #bill-receipt *,
+  #kot-receipt,
+  #kot-receipt * {
     visibility: visible !important;
     display: block;
   }
 
-  #bill-receipt {
+  #bill-receipt,
+  #kot-receipt {
     position: absolute;
     left: 0;
     top: 0;

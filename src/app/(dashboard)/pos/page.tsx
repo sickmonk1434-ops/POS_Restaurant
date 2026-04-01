@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { simulateKOTPrint } from "@/lib/services/kot";
 import { LocalBill, LocalTable, LocalCategory, LocalFloor, LocalMenuItem, PaymentItem, BillItem } from "@/lib/dexie";
 import { BillReceipt } from "@/components/bill-receipt";
+import { KOTReceipt } from "@/components/kot-receipt";
 
 type CartItem = BillItem;
 
@@ -41,6 +42,7 @@ export default function POSPage() {
 
     // Print State
     const [printBill, setPrintBill] = useState<{ bill: LocalBill; tableNumber: string; cashierName: string } | null>(null);
+    const [printKOT, setPrintKOT] = useState<{ tableNumber: string; items: BillItem[] } | null>(null);
 
     // Live queries
     const categoriesRaw = useLiveQuery(() => localDb.categories.toArray());
@@ -133,7 +135,13 @@ export default function POSPage() {
             return;
         }
         const table = tables.find((t: LocalTable) => t.id === selectedTableId);
-        await simulateKOTPrint(table?.number || "Takeaway", cart);
+        
+        // Set KOT print state
+        setPrintKOT({
+            tableNumber: table?.number || "Takeaway",
+            items: [...cart]
+        });
+
         await handleSaveBill('pending');
     };
 
@@ -148,7 +156,7 @@ export default function POSPage() {
             return;
         }
 
-        const billData: Record<string, unknown> = {
+        const billData: LocalBill = {
             id: activeBillId || crypto.randomUUID(),
             tableId: selectedTableId || 'takeaway',
             orderType,
@@ -156,18 +164,16 @@ export default function POSPage() {
             total,
             status,
             items: cart,
-            payments: status === 'paid' ? payments.map(p => ({
+            payments: (status === 'paid' ? payments.map(p => ({
                 id: p.id || crypto.randomUUID(),
-                method: p.method || 'cash',
+                method: (p.method as 'cash' | 'upi' | 'card') || 'cash',
                 amount: p.amount || 0,
                 timestamp: p.timestamp || new Date()
-            })) as PaymentItem[] : [],
+            })) : []) as PaymentItem[],
             updatedAt: new Date(),
-            synced: false
+            synced: false,
+            createdAt: activeBillId ? (runningBills.find(b => b.id === activeBillId)?.createdAt || new Date()) : new Date()
         };
-        if (!activeBillId) {
-            billData.createdAt = new Date();
-        }
 
         try {
             if (activeBillId) {
@@ -181,7 +187,7 @@ export default function POSPage() {
             if (status === 'paid') {
                 const table = tables.find(t => t.id === selectedTableId);
                 setPrintBill({
-                    bill: billData as LocalBill,
+                    bill: billData,
                     tableNumber: table?.number || "Takeaway",
                     cashierName: user?.name || user?.id || "Cashier",
                 });
@@ -226,12 +232,33 @@ export default function POSPage() {
         }
     }, [printBill]);
 
-    const receiptElement = printBill && (
-        <BillReceipt
-            bill={printBill.bill}
-            tableNumber={printBill.tableNumber}
-            cashierName={printBill.cashierName}
-        />
+    // Print KOT when printKOT is set
+    useEffect(() => {
+        if (printKOT) {
+            const timeout = setTimeout(() => {
+                window.print();
+                setPrintKOT(null);
+            }, 100);
+            return () => clearTimeout(timeout);
+        }
+    }, [printKOT]);
+
+    const receiptElement = (
+        <>
+            {printBill && (
+                <BillReceipt
+                    bill={printBill.bill}
+                    tableNumber={printBill.tableNumber}
+                    cashierName={printBill.cashierName}
+                />
+            )}
+            {printKOT && (
+                <KOTReceipt
+                    tableNumber={printKOT.tableNumber}
+                    items={printKOT.items}
+                />
+            )}
+        </>
     );
 
     // Landing View Components
